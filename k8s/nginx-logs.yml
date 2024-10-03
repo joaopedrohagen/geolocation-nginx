@@ -37,23 +37,18 @@ spec:
         - name: nginx-logs
           hostPath:
             path: /var/log/nginx
-      tolerations:
-        - key: "environment"
-          operator: "Equal"
-          value: "master"
-          effect: "NoSchedule"
-        - key: "node-role.kubernetes.io/etcd"
-          operator: "Exists"
-          effect: "NoExecute"
-        - key: "node-role.kubernetes.io/controlplane"
-          operator: "Exists"
-          effect: "NoSchedule"
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: "node-role.kubernetes.io/master"
-                operator: "In"
-                values:
-                - "true"
+      # Configure the server where the nginx are
+      # tolerations:
+      #   - key: "environment"
+      #     operator: "Equal"
+      #     value: "master"
+      #     effect: "NoSchedule"
+      # affinity:
+      #   nodeAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #       - matchExpressions:
+      #         - key: "node-role.kubernetes.io/master"
+      #           operator: "In"
+      #           values:
+      #           - "true"

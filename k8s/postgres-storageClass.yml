@@ -1,7 +1,7 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: postgres-monitoring
+  name: postgres
   namespace: monitoring
 provisioner: kubernetes.io/no-provisioner
 reclaimPolicy: Retain

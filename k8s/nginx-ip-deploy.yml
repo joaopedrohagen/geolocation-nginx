@@ -1,13 +1,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx-ip
+  name: geolocation-nginx
   namespace: monitoring
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: nginx-ip
+      app: geolocation-nginx
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -16,11 +16,11 @@ spec:
   template:
     metadata:
       labels:
-        app: nginx-ip
+        app: geolocation-nginx
     spec:
       containers:
-        - name: nginx-ip
-          image: tecsci/get-ip-nginx:latest
+        - name: geolocation-nginx
+          image: hagendev/get-ip-nginx:latest
           command: [ "python3", "ip_nginx.py" ]
           imagePullPolicy: Always
           resources:
@@ -32,33 +32,28 @@ spec:
               memory: 256M
           envFrom:
             - secretRef:
-                name: nginx-ip
+                name: geolocation-nginx
           volumeMounts:
-            - name: nginx-ip
+            - name: geolocation-nginx
               mountPath: /var/log/nginx
       volumes:
-        - name: nginx-ip
+        - name: geolocation-nginx
           hostPath:
             path: /var/log/nginx
       imagePullSecrets:
         - name: docker-secret
-      tolerations:
-        - key: "environment"
-          operator: "Equal"
-          value: "master"
-          effect: "NoSchedule"
-        - key: "node-role.kubernetes.io/etcd"
-          operator: "Exists"
-          effect: "NoExecute"
-        - key: "node-role.kubernetes.io/controlplane"
-          operator: "Exists"
-          effect: "NoSchedule"
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: "node-role.kubernetes.io/master"
-                operator: "In"
-                values:
-                - "true"
+      # Configure the server where the nginx are
+      # tolerations:
+      #   - key: "environment"
+      #     operator: "Equal"
+      #     value: "nginx"
+      #     effect: "NoSchedule"
+      # affinity:
+      #   nodeAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #       - matchExpressions:
+      #         - key: "node-role.kubernetes.io/master"
+      #           operator: "In"
+      #           values:
+      #           - "true"
