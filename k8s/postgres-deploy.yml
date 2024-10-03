@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-monitoring
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-monitoring
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: postgres-monitoring
+    spec:
+      containers:
+        - name: postgres-monitoring
+          image: postgres:16
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: '0.1'
+              memory: 128Mi
+            limits:
+              cpu: '0.3'
+              memory: 512Mi
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: postgres-monitoring
+          volumeMounts:
+            - name: postgres-monitoring
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-monitoring
+          persistentVolumeClaim:
+            claimName: postgres-monitoring
+      tolerations:
+        - key: environment
+          operator: Equal
+          value: brother-eye
+          effect: NoSchedule

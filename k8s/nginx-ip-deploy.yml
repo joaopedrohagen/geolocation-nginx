@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-ip
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-ip
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: nginx-ip
+    spec:
+      containers:
+        - name: nginx-ip
+          image: tecsci/get-ip-nginx:latest
+          command: [ "python3", "ip_nginx.py" ]
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: '0.1'
+              memory: 128M
+            limits:
+              cpu: '0.2'
+              memory: 256M
+          envFrom:
+            - secretRef:
+                name: nginx-ip
+          volumeMounts:
+            - name: nginx-ip
+              mountPath: /var/log/nginx
+      volumes:
+        - name: nginx-ip
+          hostPath:
+            path: /var/log/nginx
+      imagePullSecrets:
+        - name: docker-secret
+      tolerations:
+        - key: "environment"
+          operator: "Equal"
+          value: "master"
+          effect: "NoSchedule"
+        - key: "node-role.kubernetes.io/etcd"
+          operator: "Exists"
+          effect: "NoExecute"
+        - key: "node-role.kubernetes.io/controlplane"
+          operator: "Exists"
+          effect: "NoSchedule"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: "node-role.kubernetes.io/master"
+                operator: "In"
+                values:
+                - "true"
